@@ -7,12 +7,9 @@ from django.db import models
 
 class Order(models.Model):
     client_id = models.CharField(max_length=10)
-    order_date = models.DateField(auto_now_add=True)
+    order_date = models.DateTimeField(auto_now_add=True)
     order_price = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0.00, editable=False)
-
-    def __str__(self):
-        return self.id
+        max_digits=10, decimal_places=2, default=0.00)
 
 
 '''Modelo de Topping(Ingresados manualmente de manera previa)'''
@@ -44,7 +41,4 @@ class Pizza(models.Model):
     toppings = models.ManyToManyField(
         Topping, blank=True, related_name="pizzas")
     price = models.DecimalField(
-        max_digits=4, decimal_places=2, default=0.00, editable=False)
-
-    def __str__(self):
-        return self.name
+        max_digits=4, decimal_places=2, default=0.00)

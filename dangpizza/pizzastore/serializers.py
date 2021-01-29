@@ -19,8 +19,10 @@ class ToppingSerializer(serializers.ModelSerializer):
 
 
 class PizzaSerializer(serializers.ModelSerializer):
-    toppings = ToppingSerializer(read_only=True, many=True)
+    #toppings = ToppingSerializer(read_only=True, many=True)
 
     class Meta:
         model = Pizza
         fields = ('id', 'in_order', 'pizza_size', 'toppings', 'price')
+
+        # Prob override create method añadiendo un pizza.toppings.add(toppings.objects.get(name='toppings'))

@@ -62,7 +62,7 @@ class OrderListView(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request):
-        orders = Pizza.objects.all()
+        orders = Order.objects.all()
         orders_serializer = OrderSerializer(orders, many=True)
         return Response(orders_serializer.data)
 
@@ -71,8 +71,30 @@ class OrderListView(APIView):
 
     def post(self, request):
         data = request.data
-        serializer = OrderSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        '''Serializo y guardo en la BD la parte de Orden de la data entrante por la request
+        '''
+        order_serializer = OrderSerializer(data=data)
+        if order_serializer.is_valid():
+            final_order = order_serializer.save()
+
+            made_order = order_serializer.data
+            '''Recorro el array de pizzas de request.data 
+            y procedo a crear un nuevo objeto al que le añado el id de la orden recien creada +
+            los campos de pizza previamente incluidos en la pizza en cuestion de request.data
+            '''
+            for pizza in data["pizzas"]:
+
+                temp_pizza = Pizza()
+                temp_pizza.in_order = final_order
+                temp_pizza.pizza_size = pizza["pizza_size"]
+                temp_pizza.price = pizza["price"]
+                temp_pizza.save()
+                for topping in pizza["toppings"]:
+                    temp_pizza.toppings.add(
+                        Topping.objects.get(name=topping["name"])
+                    )
+                # this prob not needed, se puede guardar directamente temp_pizza
+                temp_pizza.save()
+
+            return Response(made_order, status=status.HTTP_201_CREATED)
+        return Response(order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
