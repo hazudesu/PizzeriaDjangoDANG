@@ -39,6 +39,6 @@ class Pizza(models.Model):
         ),
     )
     toppings = models.ManyToManyField(
-        Topping, blank=True, related_name="pizzas")
+        Topping, blank=True, related_name="pizzast")
     price = models.DecimalField(
         max_digits=4, decimal_places=2, default=0.00)

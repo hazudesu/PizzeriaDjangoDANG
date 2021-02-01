@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404
 from pizzastore.models import Topping, Pizza, Order
 
 '''API para manejo de requests sobre Ordenes, Toppings y Pizzas'''
+# Discutir si manejar vistas detalladas de cada orden y mostrar las pizzas
 
 
 class ToppingListView(APIView):
@@ -21,7 +22,7 @@ class ToppingListView(APIView):
         toppings = Topping.objects.all()
         toppings_serializer = ToppingSerializer(toppings, many=True)
         return Response(toppings_serializer.data)
-    '''Crear Topping (no necesario, implementado por terminos de prueba)'''
+    '''Agregar Topping (no necesario, implementado por terminos de prueba)'''
 
     def post(self, request):
         data = request.data
@@ -42,12 +43,10 @@ class PizzaListView(APIView):
         pizzas_serializer = PizzaSerializer(pizzas, many=True)
         return Response(pizzas_serializer.data)
 
-    '''Crear Pizza (Cambiar)
+    '''Agregar Pizza (no necesario, las pizzas se agregan en la clase de Orden)
     '''
 
     def post(self, request):
-        '''Probablemente cambiar para que el campo de topping sea un .add()
-        '''
         data = request.data
         serializer = PizzaSerializer(data=data)
         if serializer.is_valid():
@@ -57,7 +56,7 @@ class PizzaListView(APIView):
 
 
 class OrderListView(APIView):
-    '''Obtener lista de Ordenes Realizadas
+    '''Obtener lista de Ordenes Realizadas (Ventas Generales)
     '''
     permission_classes = (AllowAny,)
 
@@ -66,7 +65,7 @@ class OrderListView(APIView):
         orders_serializer = OrderSerializer(orders, many=True)
         return Response(orders_serializer.data)
 
-    '''Crear Orden (Cambiar)
+    '''Agregar Orden (Se desglosa y se agregan las pizzas tambien)
     '''
 
     def post(self, request):
@@ -93,8 +92,42 @@ class OrderListView(APIView):
                     temp_pizza.toppings.add(
                         Topping.objects.get(name=topping["name"])
                     )
-                # this prob not needed, se puede guardar directamente temp_pizza
                 temp_pizza.save()
 
             return Response(made_order, status=status.HTTP_201_CREATED)
         return Response(order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class OrderDetailView(APIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request, **kwargs):
+        order = Order.objects.get(pk=kwargs["id"])
+        pizzas = Pizza.objects.filter(in_order=order)
+        pizzas_serializer = PizzaSerializer(pizzas, many=True)
+        return Response(pizzas_serializer.data)
+
+
+class SalesbyToppingsView(APIView):
+    '''Obtener lista de Pizzas Vendidas por ingrediente
+    '''
+    permission_classes = (AllowAny,)
+
+    def get(self, request, **kwargs):
+        # or kwargs["name/topping"]
+        topping = Topping.objects.get(name=kwargs["topping"])
+        sales = topping.pizzast.all()
+        sales_serializer = PizzaSerializer(sales, many=True)
+        return Response(sales_serializer.data)
+
+
+class SalesbySizeView(APIView):
+    '''Obtener lista de Pizzas Vendidas por tamaño
+    '''
+    permission_classes = (AllowAny,)
+
+    def get(self, request, **kwargs):
+        sales = Pizza.objects.filter(
+            pizza_size=kwargs["pizza_size"])  # or kwargs["pizza_size"]
+        sales_serializer = PizzaSerializer(sales, many=True)
+        return Response(sales_serializer.data)
