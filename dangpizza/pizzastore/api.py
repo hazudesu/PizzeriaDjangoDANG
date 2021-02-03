@@ -105,7 +105,18 @@ class OrderDetailView(APIView):
         order = Order.objects.get(pk=kwargs["id"])
         pizzas = Pizza.objects.filter(in_order=order)
         pizzas_serializer = PizzaSerializer(pizzas, many=True)
-        return Response(pizzas_serializer.data)
+        dataResponse = {'pizzas': pizzas_serializer.data}
+
+        # Para enviar los toppings con el name en vez de id
+        for pizza in dataResponse["pizzas"]:
+            for toppingz in pizza["toppings"]:
+                print(toppingz)
+                for i in range(len(pizza["toppings"])):
+                    if type(pizza["toppings"][i]) is int:
+                        pizza["toppings"][i] = Topping.objects.values_list(
+                            'name', flat=True).get(pk=toppingz)
+                        break
+        return Response(dataResponse)
 
 
 class SalesByToppingsView(APIView):
