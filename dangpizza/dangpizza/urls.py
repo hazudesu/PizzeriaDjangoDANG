@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth.models import User
 from rest_framework import routers
-from pizzastore.api import ToppingListView, PizzaListView, OrderListView, OrderDetailView, SalesbyToppingsView, SalesbySizeView
+from pizzastore.api import ToppingListView, PizzaListView, OrderListView, OrderDetailView, SalesByToppingsView, SalesBySizeView
 
 router = routers.DefaultRouter()
 
@@ -34,7 +34,7 @@ urlpatterns = [
     url(r'^orders/$', OrderListView.as_view()),
     url(r'^orders/(?P<id>\d+)/$', OrderDetailView.as_view()),
     url(r'^ordersbytop/(?P<topping>\w{1,50})/$',
-        SalesbyToppingsView.as_view()),
+        SalesByToppingsView.as_view()),
     url(r'^ordersbysize/(?P<pizza_size>\w{1,50})/$',
-        SalesbySizeView.as_view()),
+        SalesBySizeView.as_view()),
 ]

@@ -63,7 +63,7 @@ class OrderListView(APIView):
     def get(self, request):
         orders = Order.objects.all()
         orders_serializer = OrderSerializer(orders, many=True)
-        return Response(orders_serializer.data)
+        return Response({'orders': orders_serializer.data})
 
     '''Agregar Orden (Se desglosa y se agregan las pizzas tambien)
     '''
@@ -77,7 +77,7 @@ class OrderListView(APIView):
             final_order = order_serializer.save()
 
             made_order = order_serializer.data
-            '''Recorro el array de pizzas de request.data 
+            '''Recorro el array de pizzas de request.data
             y procedo a crear un nuevo objeto al que le añado el id de la orden recien creada +
             los campos de pizza previamente incluidos en la pizza en cuestion de request.data
             '''
@@ -108,26 +108,47 @@ class OrderDetailView(APIView):
         return Response(pizzas_serializer.data)
 
 
-class SalesbyToppingsView(APIView):
+class SalesByToppingsView(APIView):
     '''Obtener lista de Pizzas Vendidas por ingrediente
     '''
     permission_classes = (AllowAny,)
 
     def get(self, request, **kwargs):
-        # or kwargs["name/topping"]
         topping = Topping.objects.get(name=kwargs["topping"])
         sales = topping.pizzast.all()
         sales_serializer = PizzaSerializer(sales, many=True)
-        return Response(sales_serializer.data)
+        dataResponse = {'pizzas': sales_serializer.data}
+
+        # Para enviar los toppings con el name en vez de id
+        for pizza in dataResponse["pizzas"]:
+            for toppingz in pizza["toppings"]:
+                print(toppingz)
+                for i in range(len(pizza["toppings"])):
+                    if type(pizza["toppings"][i]) is int:
+                        pizza["toppings"][i] = Topping.objects.values_list(
+                            'name', flat=True).get(pk=toppingz)
+                        break
+        return Response(dataResponse)
 
 
-class SalesbySizeView(APIView):
+class SalesBySizeView(APIView):
     '''Obtener lista de Pizzas Vendidas por tamaño
     '''
     permission_classes = (AllowAny,)
 
     def get(self, request, **kwargs):
         sales = Pizza.objects.filter(
-            pizza_size=kwargs["pizza_size"])  # or kwargs["pizza_size"]
+            pizza_size=kwargs["pizza_size"])
         sales_serializer = PizzaSerializer(sales, many=True)
-        return Response(sales_serializer.data)
+        dataResponse = {'pizzas': sales_serializer.data}
+
+        # Para enviar los toppings con el name en vez de id
+        for pizza in dataResponse["pizzas"]:
+            for toppingz in pizza["toppings"]:
+                print(toppingz)
+                for i in range(len(pizza["toppings"])):
+                    if type(pizza["toppings"][i]) is int:
+                        pizza["toppings"][i] = Topping.objects.values_list(
+                            'name', flat=True).get(pk=toppingz)
+                        break
+        return Response({'pizzas': sales_serializer.data})
