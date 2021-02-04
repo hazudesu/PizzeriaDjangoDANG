@@ -33,8 +33,8 @@ urlpatterns = [
     url(r'^pizzas/$', PizzaListView.as_view()),
     url(r'^orders/$', OrderListView.as_view()),
     url(r'^orders/(?P<id>\d+)/$', OrderDetailView.as_view()),
-    url(r'^ordersbytop/(?P<topping>\w{1,50})/$',
+    url(r'^ordersbytop/(?P<topping>[\w\ ]+)/$',
         SalesByToppingsView.as_view()),
-    url(r'^ordersbysize/(?P<pizza_size>\w{1,50})/$',
+    url(r'^ordersbysize/(?P<pizza_size>[\w\ ]+)/$',
         SalesBySizeView.as_view()),
 ]
